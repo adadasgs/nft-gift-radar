@@ -1,0 +1,20 @@
+services:
+  - type: worker
+    name: nft-gift-radar
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bot.py
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
+      - key: PORTALS_API_KEY
+        sync: false
+      - key: DATABASE_PATH
+        value: /var/data/radar.db
+      - key: POLL_INTERVAL_SECONDS
+        value: "30"
+    disk:
+      name: nft-gift-radar-data
+      mountPath: /var/data
+      sizeGB: 1
