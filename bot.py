@@ -21,11 +21,11 @@ BOT_TOKEN = os.getenv("BOT_TOKEN", "").strip()
 POLL_INTERVAL = max(20, int(os.getenv("POLL_INTERVAL_SECONDS", "60")))
 
 CATEGORIES = [
-    ("5", "💸 Дешёвые · до 5 TON", Decimal("0"), Decimal("5")),
-    ("10", "💎 10 TON · 5–15 TON", Decimal("5"), Decimal("15")),
-    ("20", "🔥 20 TON · 15–27.5 TON", Decimal("15"), Decimal("27.5")),
-    ("35", "🚀 35 TON · 27.5–60 TON", Decimal("27.5"), Decimal("60")),
-    ("60", "👑 60+ TON", Decimal("60"), Decimal("Infinity")),
+    ("5", "💸 Дешёвые · до 5 GRAM", Decimal("0"), Decimal("5")),
+    ("10", "💎 10 GRAM · 5–15 GRAM", Decimal("5"), Decimal("15")),
+    ("20", "🔥 20 GRAM · 15–27.5 GRAM", Decimal("15"), Decimal("27.5")),
+    ("35", "🚀 35 GRAM · 27.5–60 GRAM", Decimal("27.5"), Decimal("60")),
+    ("60", "👑 60+ GRAM", Decimal("60"), Decimal("Infinity")),
 ]
 
 bot = Bot(BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
@@ -73,16 +73,13 @@ def log_keyboard(lot):
 
 
 async def publish_lot(lot):
-    # Do not silently treat GRAM, Stars, or rubles as TON.
-    if lot.get("currency") != "TON":
-        return
     price = Decimal(str(lot["price"]))
     key = category_for(price)
     for chat in await db.get_chats():
         thread_id = chat.get(f"topic_{key}")
         caption = (
             f"<b>{lot['title']}</b>\n"
-            f"💰 Цена: <b>{price.normalize()} TON</b>\n"
+            f"💰 Цена: <b>{price.normalize()} GRAM</b>\n"
             f"🏷 Источник: <b>{lot['source'].title()}</b>\n"
             f"🆔 Лот: <code>{lot['source_id']}</code>"
         )
@@ -124,13 +121,24 @@ async def setup(message: Message):
         return
     try:
         topics = {}
+        existing = next((chat for chat in await db.get_chats()
+                         if chat["chat_id"] == message.chat.id), None)
         for key, title, _low, _high in CATEGORIES:
-            topic = await bot.create_forum_topic(message.chat.id, name=title)
-            topics[key] = topic.message_thread_id
+            if existing and existing.get(f"topic_{key}"):
+                thread_id = existing[f"topic_{key}"]
+                await bot.edit_forum_topic(
+                    chat_id=message.chat.id,
+                    message_thread_id=thread_id,
+                    name=title,
+                )
+                topics[key] = thread_id
+            else:
+                topic = await bot.create_forum_topic(message.chat.id, name=title)
+                topics[key] = topic.message_thread_id
         await db.add_chat(message.chat.id, message.chat.title or str(message.chat.id), topics)
         await message.answer(
             "✅ <b>Группа подключена!</b>\n"
-            "Создал 5 тем: до 5, 10, 20, 35 и 60+ TON."
+            "Создал 5 тем: до 5, 10, 20, 35 и 60+ GRAM."
         )
     except TelegramBadRequest as exc:
         await message.answer(f"Не удалось создать темы: <code>{exc}</code>\nПроверь, что включены темы форума.")
@@ -204,8 +212,6 @@ async def tracker_loop():
         try:
             listings = await portals.fetch_listings()
             for lot in listings:
-                if lot.get("currency") != "TON":
-                    continue
                 if await db.get_lot(lot["source"], lot["source_id"]):
                     continue
                 await publish_lot(lot)
