@@ -4,7 +4,7 @@ Telegram bot for monitoring Telegram NFT gift listings and publishing them into 
 
 ## Implemented foundation
 - `/start` explains how to connect the bot.
-- `/setup` creates five forum topics in a supergroup: up to 5 TON, 5–15 TON, 15–27.5 TON, 27.5–60 TON, and 60+ TON.
+- `/setup` creates five forum topics in a supergroup: up to 5 GRAM, 5–15 GRAM, 15–27.5 GRAM, 27.5–60 GRAM, and 60+ GRAM.
 - `/status` shows connected group count.
 - SQLite persistence for chats, lots, and reservations.
 - Atomic reservation: only one user can reserve a lot; reservation stays until that user releases it.
@@ -12,7 +12,7 @@ Telegram bot for monitoring Telegram NFT gift listings and publishing them into 
 - Marketplace adapter interface and a Portals API reader.
 
 ## Important: source and currency limitations
-The Portals Partners API search returns listing prices in **GRAM**, not TON. Its documented market config exposes GRAM ruble/USD rates, but does not document a GRAM-to-TON conversion. This project therefore deliberately refuses to label GRAM prices as TON or put them into TON price categories. Portals listings are not yet published until a verified conversion is implemented or the source provides TON-denominated prices.
+The Portals Partners API search returns listing prices in **GRAM**. The bot uses these prices directly and publishes them into GRAM price categories.
 
 Other marketplaces (Fragment, Tonnel, Getgems, etc.) are not yet active integrations. The adapter interface is ready, but each source needs a verified public or authorized data interface. The bot must not claim to monitor a marketplace until its adapter is implemented and tested.
 
