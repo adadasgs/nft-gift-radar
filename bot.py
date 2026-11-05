@@ -19,8 +19,6 @@ log = logging.getLogger("gift-radar")
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "").strip()
 POLL_INTERVAL = max(20, int(os.getenv("POLL_INTERVAL_SECONDS", "60")))
-# Portals reports prices in GRAM. Set this only after verifying a current GRAM->TON rate.
-GRAM_TO_TON_RATE = os.getenv("GRAM_TO_TON_RATE", "").strip()
 
 CATEGORIES = [
     ("5", "💸 Дешёвые · до 5 TON", Decimal("0"), Decimal("5")),
